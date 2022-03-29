@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import Axios from 'axios';
-import PageNumbers from './PageNumbers';
-import SearchInput from './SearchInput';
-import Table from './Table';
+import React, { useState, useEffect } from "react";
+import Axios from "axios";
+import PageNumbers from "./PageNumbers";
+import SearchInput from "./SearchInput";
+import Table from "./Table";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [filterdResults, setFilterdResults] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
-  const [searchInput, setSearchInput] = useState('');
+  const [searchInput, setSearchInput] = useState("");
+  const [isEditable, setIsEditable] = useState(false);
+  const [isEditableId, setIsEditableId] = useState(null);
 
   // fetach users from the api
   const fetchUsers = async () => {
     const { data } = await Axios.get(
-      'https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json'
+      "https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json"
     );
     const checkValue = data.map((user) => {
       return {
@@ -51,18 +53,25 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-  // edit and delete fuctions
+  // delete fuctions
   const deleteHandler = (id) => {
     const userName = users.find((user) => user.id === id);
-    alert('Are you sure you want to delete ' + userName.name + '?');
+    alert("Are you sure you want to delete " + userName.name + "?");
     const newUsers = users.filter((user) => user.id !== id);
     setUsers(newUsers);
+  };
+
+  // edit fuctions
+  const editHandler = (id) => {
+    const userName = users.find((user) => user.id === id);
+    setIsEditable(true);
+    setIsEditableId(userName.id);
   };
 
   const deleteAllHandler = () => {
     const checkedUsers = users.filter((user) => user.isChecked === true);
     if (checkedUsers.length === 0) {
-      alert('Please select a user to delete');
+      alert("Please select a user to delete");
       return;
     }
     const newUsers = users.filter((user) => user.isChecked !== true);
@@ -102,11 +111,11 @@ const Users = () => {
   const currentUsers = filterdResults.slice(indexOfFirstUser, indexOfLastUser);
 
   return (
-    <div className='m-3'>
-      <div className='flex flex-col'>
-        <div className='overflow-x-auto sm:-mx-6 lg:-mx-8'>
-          <div className='py-2 inline-block min-w-full sm:px-6 lg:px-8'>
-            <div className='overflow-hidden'>
+    <div className="m-3">
+      <div className="flex flex-col">
+        <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
+            <div className="overflow-hidden">
               {/* Search Input */}
               <SearchInput
                 searchInput={searchInput}
@@ -119,21 +128,24 @@ const Users = () => {
                 currentUsers={currentUsers}
                 userCheckHandler={userCheckHandler}
                 deleteHandler={deleteHandler}
+                editHandler={editHandler}
+                isEditable={isEditable}
+                isEditableId={isEditableId}
               />
 
               {/* Delete Selected */}
-              <section className='mt-5 flex'>
+              <section className="mt-5 flex">
                 <div>
                   <button
                     onClick={deleteAllHandler}
-                    className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-2 rounded-3xl'
+                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-2 rounded-3xl"
                   >
                     Delete Selected
                   </button>
                 </div>
 
                 {/* Pagination Numbers */}
-                <div className='mx-auto'>
+                <div className="mx-auto">
                   <PageNumbers
                     users={users}
                     usersPerPage={usersPerPage}
